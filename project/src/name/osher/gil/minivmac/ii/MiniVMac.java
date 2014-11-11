@@ -82,7 +82,7 @@ public class MiniVMac extends Activity {
         	setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         }
 
-        setContentView(R.layout.screen);
+        setContentView(R.layout.activity_mini_vmac/*screen*/);
         screenView = (ScreenView)findViewById(R.id.screen);
         
         onActivity = false;
