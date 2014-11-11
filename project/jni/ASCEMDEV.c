@@ -258,6 +258,9 @@ IMPORTPROC ASC_interrupt_PulseNtfy(void);
 #endif
 
 #if MySoundEnabled
+ui4r nothingcount = 0;
+#define nothingcountLIMIT 128
+
 GLOBALPROC MacSound_SubTick(int SubTick)
 {
 	ui4r actL;
@@ -266,6 +269,7 @@ GLOBALPROC MacSound_SubTick(int SubTick)
 	ui4r j = 0;
 	ui4r n = SubTick_n[SubTick];
 	ui3b SoundVolume = SoundReg_Volume;
+	blnr nothing = trueblnr;
 
 label_retry:
 	p = MySound_BeginWrite(n, &actL);
@@ -297,10 +301,13 @@ label_retry:
 #endif
 					;
 
+				nothing&=((*addr)==kCenterSound);
+
 				/* Move the address on */
 				*addr = 0x80;
 				addr += 2;
 			}
+			if (nothing) nothingcount++; else nothingcount = 0;
 		} else if (2 == SoundReg801) {
 			ui4r v;
 			ui4r i0;
@@ -362,16 +369,25 @@ label_retry:
 
 				*p++ = (v >> 2);
 
+				nothing&=((v >> 2)==kCenterSound);
+
 				++SoundPhase;
 				SoundPhase &= 0x1FF;
 			}
+			if (nothing) nothingcount++; else nothingcount = 0;
 		} else {
-			for (i = 0; i < actL; i++) {
-				*p++ = kCenterSound;
+			nothing = trueblnr;
+
+			if (nothingcount <= nothingcountLIMIT)
+			{
+				for (i = 0; i < actL; i++) {
+					*p++ = kCenterSound;
+				}
 			}
+			nothingcount++;
 		}
 
-
+#if 0
 		if (SoundVolume < 7) {
 			/*
 				Usually have volume at 7, so this
@@ -386,8 +402,11 @@ label_retry:
 				++p;
 			}
 		}
-
-		MySound_EndWrite(actL);
+#endif
+		if (nothingcount < nothingcountLIMIT)
+		{
+			MySound_EndWrite(actL);
+		}
 		n -= actL;
 		j += actL;
 		if (n > 0) {

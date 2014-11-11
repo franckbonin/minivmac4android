@@ -269,6 +269,15 @@ LOCALPROC MySound_SecondNotify(void)
 	MinFilledSoundBuffs = kSoundBuffers;
 }
 
+LOCALPROC MySound_Start(void)
+{
+	wantplaying = trueblnr;
+}
+
+LOCALPROC MySound_Stop(void)
+{
+	wantplaying = falseblnr;
+}
 #endif
 
 #if 0
@@ -833,6 +842,15 @@ JNIEXPORT void JNICALL Java_name_osher_gil_minivmac_ii_Core_setKeyUp (JNIEnv * e
 	Keyboard_UpdateKeyMap2(key, falseblnr);
 }
 
+/*
+ * Class:     name_osher_gil_minivmac_ii_Core
+ * Method:    clearAllKey
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_name_osher_gil_minivmac_ii_Core_clearAllKey (JNIEnv * env, jclass class) {
+	DisconnectKeyCodes(0);
+}
+
 #if 0
 #pragma mark -
 #pragma mark Basic Dialogs
@@ -1006,22 +1024,23 @@ JNIEXPORT void JNICALL Java_name_osher_gil_minivmac_ii_Core_setWantMacInterrupt 
 /*
  * Class:     name_osher_gil_minivmac_ii_Core
  * Method:    runTick
- * Signature: ()V
+ * Signature: ()Z
  */
-JNIEXPORT void JNICALL Java_name_osher_gil_minivmac_ii_Core_runTick (JNIEnv * env, jclass class) {
+JNIEXPORT jboolean JNICALL Java_name_osher_gil_minivmac_ii_Core_runTick (JNIEnv * env, jclass class) {
 	jEnv = env;
 	jClass = class;
 
 	//CheckForSavedTasks();
 	if (ForceMacOff) {
-		return;
+		return JNI_FALSE;
 	}
 
 	if (CurSpeedStopped) {
-		return;
+		return JNI_TRUE;
 	} else {
 		DoEmulateExtraTime();
 		RunOnEndOfSixtieth();
+		return JNI_TRUE;
 	}
 }
 
@@ -1032,6 +1051,9 @@ JNIEXPORT void JNICALL Java_name_osher_gil_minivmac_ii_Core_runTick (JNIEnv * en
  */
 JNIEXPORT void JNICALL Java_name_osher_gil_minivmac_ii_Core__1resumeEmulation (JNIEnv * env, jclass class) {
 	CurSpeedStopped = 0;
+#if MySoundEnabled
+	MySound_Start();
+#endif
 }
 
 /*
@@ -1041,6 +1063,9 @@ JNIEXPORT void JNICALL Java_name_osher_gil_minivmac_ii_Core__1resumeEmulation (J
  */
 JNIEXPORT void JNICALL Java_name_osher_gil_minivmac_ii_Core__1pauseEmulation (JNIEnv * env, jclass class) {
 	CurSpeedStopped = 1;
+#if MySoundEnabled
+	MySound_Stop();
+#endif
 }
 
 /*
@@ -1050,6 +1075,15 @@ JNIEXPORT void JNICALL Java_name_osher_gil_minivmac_ii_Core__1pauseEmulation (JN
  */
 JNIEXPORT jboolean JNICALL Java_name_osher_gil_minivmac_ii_Core_isPaused (JNIEnv * env, jclass class) {
 	return CurSpeedStopped?JNI_TRUE:JNI_FALSE;
+}
+
+/*
+ * Class:     name_osher_gil_minivmac_ii_Core
+ * Method:    isMacOff
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_name_osher_gil_minivmac_ii_Core_isMacOff (JNIEnv * env, jclass class) {
+	return ForceMacOff?JNI_TRUE:JNI_FALSE;
 }
 
 #if 0
@@ -1139,7 +1173,7 @@ JNIEXPORT jboolean JNICALL Java_name_osher_gil_minivmac_ii_Core_uninit (JNIEnv *
 	}
 
 #if MySoundEnabled
-	//MySound_Stop();
+	MySound_Stop();
 #endif
 #if MySoundEnabled
 	//MySound_UnInit();

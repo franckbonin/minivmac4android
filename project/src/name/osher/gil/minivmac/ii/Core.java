@@ -36,10 +36,11 @@ public class Core {
 	public native static boolean uninit();
 	
 	// emulation
-	public native static void runTick();
+	public native static boolean runTick();
 	private native static void _resumeEmulation();
 	private native static void _pauseEmulation();
 	public native static boolean isPaused();
+	public native static boolean isMacOff();
 	public native static void setWantMacReset();
 	public native static void setWantMacInterrupt();
 	
@@ -63,7 +64,11 @@ public class Core {
 			private int frame = 0;
 			public void run() {
 				int[] screenUpdate;
-				Core.runTick();
+				if (!Core.runTick())
+				{
+					Core.uninit();
+		    		System.exit(0);
+				}
 				if (++frame == frameSkip) {
 					frame = 0;
 					screenUpdate = Core.getScreenUpdate();
@@ -96,6 +101,7 @@ public class Core {
 	// keyboard
 	public native static void setKeyDown(int scancode);
 	public native static void setKeyUp(int scancode);
+	public native static void clearAllKey();
 	
 	// screen
 	public native static int screenWidth();
@@ -125,15 +131,31 @@ public class Core {
 	    }
 	}
 	
+	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+	public static String bytesToHex(byte[] bytes) {
+	    char[] hexChars = new char[bytes.length * 2];
+	    int v;
+	    for ( int j = 0; j < bytes.length; j++ ) {
+	        v = bytes[j] & 0xFF;
+	        hexChars[j * 2] = hexArray[v >>> 4];
+	        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+	    }
+	    return new String(hexChars);
+	}
+	
 	public static void playSound() {
-		for (int i = 0 ; i < 32 ; i++) {
+		for (int i = 0 ; i < 128 ; i++) {
 			byte[] buf = soundBuf();
-			if (buf == null) break;
+			if (buf == null)
+			{
+			   continue;
+			}
 			if (mAudioTrack.getPlayState() != AudioTrack.PLAYSTATE_PLAYING)
 			{
 				mAudioTrack.play();
 			}
 			int err = mAudioTrack.write(buf, 0, buf.length);
+			//Log.w(TAG, bytesToHex(buf));
 			if (err > 0) {
 				setPlayOffset(err);
 			} else {

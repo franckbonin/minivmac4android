@@ -11,7 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
-public class Key extends LinearLayout implements View.OnTouchListener {
+public class Key extends Button implements View.OnTouchListener {
 
 	private String mText;
 	private int mScanCode;
@@ -20,33 +20,31 @@ public class Key extends LinearLayout implements View.OnTouchListener {
 	private int mHoldImage;
 	private boolean mIsStickyDown = false;
 	
-	private Button mButton;
-	
 	public Key(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		
 		TypedArray a = getContext().obtainStyledAttributes(attrs,R.styleable.Key);
-		mText = a.getString(R.styleable.Key_text);
+		//mText = a.getString(R.styleable.Key_text);
 		mScanCode = a.getInteger(R.styleable.Key_scanCode, -1);
 		mDownImage = a.getResourceId(R.styleable.Key_downImage, R.drawable.kb_key_down);
 		mUpImage = a.getResourceId(R.styleable.Key_upImage, R.drawable.kb_key_up);
 		mHoldImage = a.getResourceId(R.styleable.Key_holdImage, -1);
 		a.recycle();
 		
-		mButton = new Button(context, attrs);
-		mButton.setText(mText);
-		mButton.setTextColor(Color.BLACK);
-		mButton.setBackgroundResource(mUpImage);
-		mButton.setOnTouchListener(this);
-		this.addView(mButton);
+		//this.setText(mText);
+		this.setTextColor(Color.BLACK);
+		this.setBackgroundResource(mUpImage);
+		this.setOnTouchListener(this);
+		this.setPadding(1, 1, 1, 1);
 	}
 
+	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		if (mScanCode == -1) return false;
 		
 		if (event.getAction() == MotionEvent.ACTION_DOWN)
 		{
-			mButton.setBackgroundResource(mDownImage);
+			this.setBackgroundResource(mDownImage);
 
 			if(isStickyKey()) {
 				if (!mIsStickyDown) {
@@ -62,9 +60,12 @@ public class Key extends LinearLayout implements View.OnTouchListener {
 			return true;
 		} else if (event.getAction() == MotionEvent.ACTION_UP) {
 			if(mIsStickyDown) {
-				mButton.setBackgroundResource(mHoldImage);
+				if (-1 != mHoldImage)
+				{
+					this.setBackgroundResource(mHoldImage);
+				}
 			} else {
-				mButton.setBackgroundResource(mUpImage);
+				this.setBackgroundResource(mUpImage);
 				Core.setKeyUp(mScanCode);
 			}
 			return true;

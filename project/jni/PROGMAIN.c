@@ -81,7 +81,8 @@ LOCALPROC EmulatedHardwareZap(void)
 LOCALPROC DoMacReset(void)
 {
 	Sony_EjectAllDisks();
-	EmulatedHardwareZap();
+	//EmulatedHardwareZap();
+	InitEmulation();
 }
 
 LOCALPROC InterruptReset_Update(void)
