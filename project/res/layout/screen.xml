@@ -5,12 +5,12 @@
     xmlns:Keyboard="http://schemas.android.com/apk/res/name.osher.gil.minivmac.ii">
     <name.osher.gil.minivmac.ii.ScreenView
     	android:id="@+id/screen"
-		android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
+		android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
         
     <name.osher.gil.minivmac.ii.Keyboard
     	android:id="@+id/keyboard"
-    	android:layout_width="fill_parent"
+    	android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:paddingTop="8dip"
